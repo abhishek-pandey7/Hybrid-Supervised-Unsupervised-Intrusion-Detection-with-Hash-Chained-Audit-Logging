@@ -1,0 +1,7 @@
+# dataset is downloaded by src/data.py (56 MB, not committed)
+data/
+models/
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
