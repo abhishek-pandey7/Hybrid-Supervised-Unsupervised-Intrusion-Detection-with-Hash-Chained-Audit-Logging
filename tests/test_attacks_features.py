@@ -61,6 +61,15 @@ def test_subdomain_reorder_keeps_labels():
     assert out != url and out.endswith(".evil.com/p")
     assert sorted(out[8:].split(".evil")[0].split(".")) == ["a", "b", "c"]
     assert A.subdomain_reordering("https://evil.com/") == "https://evil.com/"
+    assert A.subdomain_reordering("https://www.x.evil.com") == "https://www.x.evil.com"
+    assert A.subdomain_reordering("https://www.a.b.evil.com").startswith("https://www.b.a.")
+
+
+def test_country_code_suffix():
+    assert A.homoglyph_ascii("http://www.solo.org.br/x") == "http://www.s010.org.br/x"
+    assert A.combined("http://www.institutohumanus.org.br").endswith(".org.br")
+    assert A._split_host("shop.example.co.uk") == (["shop"], "example", "co.uk")
+    assert A._split_host("a.b.com") == (["a"], "b", "com")
 
 
 def test_obfuscation_and_mimicry():

@@ -40,12 +40,21 @@ def _host(url):
     return p.netloc.rpartition("@")[2] if p else ""
 
 
+SECOND_LEVEL = {"com", "co", "org", "net", "gov", "edu", "ac", "or", "ne", "go"}
+
+
 def _split_host(host):
-    """-> (subdomain labels, registered name, tld). Port is kept on the tld."""
+    """-> (subdomain labels, registered name, public suffix). Port is kept on the suffix.
+
+    Small heuristic instead of the full Public Suffix List: treats `org.br`,
+    `co.uk`, `com.au` ... as a two-label suffix.
+    """
     labels = host.split(".")
     if len(labels) < 2:
         return [], host, ""
-    return labels[:-2], labels[-2], labels[-1]
+    n_suffix = 2 if (len(labels) >= 3 and labels[-2] in SECOND_LEVEL
+                     and len(labels[-1].split(":")[0]) == 2) else 1
+    return labels[:-n_suffix - 1], labels[-n_suffix - 1], ".".join(labels[-n_suffix:])
 
 
 def homoglyph_ascii(url: str) -> str:
@@ -77,8 +86,10 @@ def encoding_manipulation(url: str) -> str:
 
 
 def subdomain_reordering(url: str, seed: int = 0) -> str:
-    """Shuffle the subdomain labels (a.b.evil.com -> b.a.evil.com)."""
+    """Shuffle the subdomain labels (a.b.evil.com -> b.a.evil.com). A leading www stays first."""
     subs, name, tld = _split_host(_host(url))
+    www = subs[:1] if subs[:1] == ["www"] else []
+    subs = subs[len(www):]
     if len(subs) < 2:
         return url
     rng = random.Random(f"{seed}:{url}")
@@ -87,7 +98,7 @@ def subdomain_reordering(url: str, seed: int = 0) -> str:
         rng.shuffle(shuffled)
         if shuffled != subs:
             break
-    return _replace_host(url, ".".join(shuffled + [name, tld]))
+    return _replace_host(url, ".".join(www + shuffled + [name, tld]))
 
 
 def obfuscation(url: str) -> str:
