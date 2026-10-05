@@ -23,6 +23,7 @@ def main():
     ap.add_argument("urls", nargs="+")
     ap.add_argument("--attacks", action="store_true", help="also score each attacked variant")
     args = ap.parse_args()
+    sys.stdout.reconfigure(encoding="utf-8")   # homoglyph variants contain Cyrillic letters
 
     try:
         rf = joblib.load(MODELS / "rf_baseline.joblib")["model"]

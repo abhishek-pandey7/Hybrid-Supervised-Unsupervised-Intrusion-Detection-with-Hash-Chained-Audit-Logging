@@ -1,0 +1,28 @@
+scenario,model,accuracy,precision,recall,f1,roc_auc
+clean,Random Forest (baseline),0.9979,0.9994,0.9958,0.9976,0.9983
+clean,"LRF (bounded, no aug.)",0.9981,0.9999,0.9956,0.9977,0.9987
+clean,AR-LRF (hardened),0.997,0.997,0.996,0.9965,0.9987
+homoglyph_ascii,Random Forest (baseline),0.9981,0.9994,0.9961,0.9977,0.9992
+homoglyph_ascii,"LRF (bounded, no aug.)",0.9983,0.9999,0.9961,0.998,0.9995
+homoglyph_ascii,AR-LRF (hardened),0.9974,0.997,0.997,0.997,0.9996
+homoglyph_unicode,Random Forest (baseline),0.9979,0.9994,0.9958,0.9976,0.9982
+homoglyph_unicode,"LRF (bounded, no aug.)",0.9981,0.9999,0.9956,0.9977,0.9986
+homoglyph_unicode,AR-LRF (hardened),0.9984,0.997,0.9994,0.9982,0.9999
+token_padding,Random Forest (baseline),0.9997,0.9994,1.0,0.9997,1.0
+token_padding,"LRF (bounded, no aug.)",0.9999,0.9999,1.0,0.9999,1.0
+token_padding,AR-LRF (hardened),0.9987,0.997,1.0,0.9985,1.0
+encoding,Random Forest (baseline),0.9979,0.9994,0.9958,0.9976,0.9983
+encoding,"LRF (bounded, no aug.)",0.9981,0.9999,0.9956,0.9977,0.9987
+encoding,AR-LRF (hardened),0.997,0.997,0.996,0.9965,0.9987
+subdomain_reorder,Random Forest (baseline),0.9979,0.9994,0.9958,0.9976,0.9983
+subdomain_reorder,"LRF (bounded, no aug.)",0.9981,0.9999,0.9956,0.9977,0.9987
+subdomain_reorder,AR-LRF (hardened),0.997,0.997,0.996,0.9965,0.9987
+obfuscation,Random Forest (baseline),0.9979,0.9994,0.9957,0.9975,1.0
+obfuscation,"LRF (bounded, no aug.)",0.9981,0.9999,0.9957,0.9978,1.0
+obfuscation,AR-LRF (hardened),0.9987,0.997,1.0,0.9985,1.0
+benign_mimicry,Random Forest (baseline),0.8442,0.999,0.6359,0.7772,0.8474
+benign_mimicry,"LRF (bounded, no aug.)",0.8441,0.9998,0.6352,0.7768,0.8678
+benign_mimicry,AR-LRF (hardened),0.8593,0.9955,0.6736,0.8035,0.8965
+combined,Random Forest (baseline),0.8441,0.999,0.6355,0.7769,0.847
+combined,"LRF (bounded, no aug.)",0.8442,0.9998,0.6352,0.7769,0.8659
+combined,AR-LRF (hardened),0.9789,0.9968,0.9536,0.9748,0.9943

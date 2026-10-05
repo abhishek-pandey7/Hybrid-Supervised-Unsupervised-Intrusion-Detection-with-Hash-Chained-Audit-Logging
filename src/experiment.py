@@ -279,8 +279,8 @@ def plot_all(robust, probas, y_te, imp, loao, bias, clean):
     ax.grid(axis="x", visible=False); ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncol=3)
     fig.savefig(FIGS / "f1_ablation.png"); plt.close(fig)
 
-    # worst attack for the baseline
-    worst = rec["Random Forest (baseline)"].drop("clean").idxmin()
+    # hardest attack = the one the *hardened* model handles worst
+    worst = rec["AR-LRF (hardened)"].drop("clean").idxmin()
 
     # 3. confusion matrices
     fig, axes = plt.subplots(1, 4, figsize=(16, 3.8), gridspec_kw={"wspace": 0.35})
@@ -298,8 +298,8 @@ def plot_all(robust, probas, y_te, imp, loao, bias, clean):
         ax.set_xticks([0, 1], ["legit", "phishing"]); ax.set_yticks([0, 1], ["legit", "phishing"])
         ax.set_xlabel("Predicted"); ax.set_ylabel("Actual" if ax is axes[0] else ""); ax.grid(False)
         ax.set_title(f"{m.split(' (')[0]} | {SCEN_LABEL[s].replace(chr(10), ' ')}", fontsize=10, loc="left")
-    fig.suptitle(f"Confusion matrices: clean test set vs worst attack ({SCEN_LABEL[worst].replace(chr(10), ' ')})",
-                 x=0.01, y=1.06, ha="left", color=INK)
+    fig.suptitle(f"Confusion matrices: clean test set vs hardest attack ({SCEN_LABEL[worst].replace(chr(10), ' ')})",
+                 x=0.01, y=1.03, ha="left", color=INK)
     fig.savefig(FIGS / "confusion_matrices.png"); plt.close(fig)
 
     # 4. ROC curves
@@ -312,7 +312,7 @@ def plot_all(robust, probas, y_te, imp, loao, bias, clean):
                 label=f"{m.split(' (')[0]}, {SCEN_LABEL[s].replace(chr(10), ' ')} (AUC {auc:.3f})")
     ax.plot([0, 1], [0, 1], color=GRID, lw=1)
     ax.set_xlabel("False positive rate"); ax.set_ylabel("True positive rate")
-    ax.set_title("ROC curves (dashed = under worst attack)", loc="left")
+    ax.set_title("ROC curves (dashed = under hardest attack)", loc="left")
     ax.legend(loc="lower right", fontsize=8.5)
     fig.savefig(FIGS / "roc_curves.png"); plt.close(fig)
 

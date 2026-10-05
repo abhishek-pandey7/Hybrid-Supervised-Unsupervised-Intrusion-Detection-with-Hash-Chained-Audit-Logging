@@ -1,0 +1,385 @@
+{
+  "data": {
+    "n_urls": 235370,
+    "n_phishing": 100520,
+    "n_legit": 134850,
+    "n_train": 188296,
+    "n_test": 47074,
+    "n_features": 29
+  },
+  "url_shape_by_class": {
+    "legitimate": {
+      "uses https": 1.0,
+      "has www.": 1.0,
+      "has a path": 0.0
+    },
+    "phishing": {
+      "uses https": 0.486299991607666,
+      "has www.": 0.41499999165534973,
+      "has a path": 0.2714
+    }
+  },
+  "shortcut_3_features": {
+    "accuracy": 0.9975,
+    "precision": 1.0,
+    "recall": 0.9942,
+    "f1": 0.9971,
+    "roc_auc": 0.9971
+  },
+  "clean": {
+    "Logistic Regression": {
+      "accuracy": 0.9976,
+      "precision": 0.9999,
+      "recall": 0.9946,
+      "f1": 0.9972,
+      "roc_auc": 0.9987,
+      "train_s": 1.82,
+      "us_per_url": 1.53
+    },
+    "Decision Tree": {
+      "accuracy": 0.9978,
+      "precision": 0.9992,
+      "recall": 0.9956,
+      "f1": 0.9974,
+      "roc_auc": 0.9978,
+      "train_s": 1.51,
+      "us_per_url": 0.3
+    },
+    "Random Forest": {
+      "accuracy": 0.9979,
+      "precision": 0.9994,
+      "recall": 0.9958,
+      "f1": 0.9976,
+      "roc_auc": 0.9983,
+      "train_s": 23.69,
+      "us_per_url": 13.06
+    }
+  },
+  "fraction_of_phishing_urls_modified": {
+    "homoglyph_ascii": 0.7445,
+    "homoglyph_unicode": 0.9124,
+    "token_padding": 1.0,
+    "encoding": 0.2689,
+    "subdomain_reorder": 0.127,
+    "obfuscation": 1.0,
+    "benign_mimicry": 0.9758,
+    "combined": 0.9988
+  },
+  "ar_lrf": {
+    "train_s": 6.35,
+    "n_adversarial_train_samples": 80416,
+    "augmentation_attacks": [
+      "homoglyph_ascii",
+      "homoglyph_unicode",
+      "token_padding",
+      "encoding",
+      "subdomain_reorder",
+      "obfuscation",
+      "benign_mimicry"
+    ],
+    "params": {
+      "n_estimators": 100,
+      "max_depth": 20,
+      "min_samples_leaf": 2
+    }
+  },
+  "robustness": [
+    {
+      "scenario": "clean",
+      "model": "Random Forest (baseline)",
+      "accuracy": 0.9979,
+      "precision": 0.9994,
+      "recall": 0.9958,
+      "f1": 0.9976,
+      "roc_auc": 0.9983
+    },
+    {
+      "scenario": "clean",
+      "model": "LRF (bounded, no aug.)",
+      "accuracy": 0.9981,
+      "precision": 0.9999,
+      "recall": 0.9956,
+      "f1": 0.9977,
+      "roc_auc": 0.9987
+    },
+    {
+      "scenario": "clean",
+      "model": "AR-LRF (hardened)",
+      "accuracy": 0.997,
+      "precision": 0.997,
+      "recall": 0.996,
+      "f1": 0.9965,
+      "roc_auc": 0.9987
+    },
+    {
+      "scenario": "homoglyph_ascii",
+      "model": "Random Forest (baseline)",
+      "accuracy": 0.9981,
+      "precision": 0.9994,
+      "recall": 0.9961,
+      "f1": 0.9977,
+      "roc_auc": 0.9992
+    },
+    {
+      "scenario": "homoglyph_ascii",
+      "model": "LRF (bounded, no aug.)",
+      "accuracy": 0.9983,
+      "precision": 0.9999,
+      "recall": 0.9961,
+      "f1": 0.998,
+      "roc_auc": 0.9995
+    },
+    {
+      "scenario": "homoglyph_ascii",
+      "model": "AR-LRF (hardened)",
+      "accuracy": 0.9974,
+      "precision": 0.997,
+      "recall": 0.997,
+      "f1": 0.997,
+      "roc_auc": 0.9996
+    },
+    {
+      "scenario": "homoglyph_unicode",
+      "model": "Random Forest (baseline)",
+      "accuracy": 0.9979,
+      "precision": 0.9994,
+      "recall": 0.9958,
+      "f1": 0.9976,
+      "roc_auc": 0.9982
+    },
+    {
+      "scenario": "homoglyph_unicode",
+      "model": "LRF (bounded, no aug.)",
+      "accuracy": 0.9981,
+      "precision": 0.9999,
+      "recall": 0.9956,
+      "f1": 0.9977,
+      "roc_auc": 0.9986
+    },
+    {
+      "scenario": "homoglyph_unicode",
+      "model": "AR-LRF (hardened)",
+      "accuracy": 0.9984,
+      "precision": 0.997,
+      "recall": 0.9994,
+      "f1": 0.9982,
+      "roc_auc": 0.9999
+    },
+    {
+      "scenario": "token_padding",
+      "model": "Random Forest (baseline)",
+      "accuracy": 0.9997,
+      "precision": 0.9994,
+      "recall": 1.0,
+      "f1": 0.9997,
+      "roc_auc": 1.0
+    },
+    {
+      "scenario": "token_padding",
+      "model": "LRF (bounded, no aug.)",
+      "accuracy": 0.9999,
+      "precision": 0.9999,
+      "recall": 1.0,
+      "f1": 0.9999,
+      "roc_auc": 1.0
+    },
+    {
+      "scenario": "token_padding",
+      "model": "AR-LRF (hardened)",
+      "accuracy": 0.9987,
+      "precision": 0.997,
+      "recall": 1.0,
+      "f1": 0.9985,
+      "roc_auc": 1.0
+    },
+    {
+      "scenario": "encoding",
+      "model": "Random Forest (baseline)",
+      "accuracy": 0.9979,
+      "precision": 0.9994,
+      "recall": 0.9958,
+      "f1": 0.9976,
+      "roc_auc": 0.9983
+    },
+    {
+      "scenario": "encoding",
+      "model": "LRF (bounded, no aug.)",
+      "accuracy": 0.9981,
+      "precision": 0.9999,
+      "recall": 0.9956,
+      "f1": 0.9977,
+      "roc_auc": 0.9987
+    },
+    {
+      "scenario": "encoding",
+      "model": "AR-LRF (hardened)",
+      "accuracy": 0.997,
+      "precision": 0.997,
+      "recall": 0.996,
+      "f1": 0.9965,
+      "roc_auc": 0.9987
+    },
+    {
+      "scenario": "subdomain_reorder",
+      "model": "Random Forest (baseline)",
+      "accuracy": 0.9979,
+      "precision": 0.9994,
+      "recall": 0.9958,
+      "f1": 0.9976,
+      "roc_auc": 0.9983
+    },
+    {
+      "scenario": "subdomain_reorder",
+      "model": "LRF (bounded, no aug.)",
+      "accuracy": 0.9981,
+      "precision": 0.9999,
+      "recall": 0.9956,
+      "f1": 0.9977,
+      "roc_auc": 0.9987
+    },
+    {
+      "scenario": "subdomain_reorder",
+      "model": "AR-LRF (hardened)",
+      "accuracy": 0.997,
+      "precision": 0.997,
+      "recall": 0.996,
+      "f1": 0.9965,
+      "roc_auc": 0.9987
+    },
+    {
+      "scenario": "obfuscation",
+      "model": "Random Forest (baseline)",
+      "accuracy": 0.9979,
+      "precision": 0.9994,
+      "recall": 0.9957,
+      "f1": 0.9975,
+      "roc_auc": 1.0
+    },
+    {
+      "scenario": "obfuscation",
+      "model": "LRF (bounded, no aug.)",
+      "accuracy": 0.9981,
+      "precision": 0.9999,
+      "recall": 0.9957,
+      "f1": 0.9978,
+      "roc_auc": 1.0
+    },
+    {
+      "scenario": "obfuscation",
+      "model": "AR-LRF (hardened)",
+      "accuracy": 0.9987,
+      "precision": 0.997,
+      "recall": 1.0,
+      "f1": 0.9985,
+      "roc_auc": 1.0
+    },
+    {
+      "scenario": "benign_mimicry",
+      "model": "Random Forest (baseline)",
+      "accuracy": 0.8442,
+      "precision": 0.999,
+      "recall": 0.6359,
+      "f1": 0.7772,
+      "roc_auc": 0.8474
+    },
+    {
+      "scenario": "benign_mimicry",
+      "model": "LRF (bounded, no aug.)",
+      "accuracy": 0.8441,
+      "precision": 0.9998,
+      "recall": 0.6352,
+      "f1": 0.7768,
+      "roc_auc": 0.8678
+    },
+    {
+      "scenario": "benign_mimicry",
+      "model": "AR-LRF (hardened)",
+      "accuracy": 0.8593,
+      "precision": 0.9955,
+      "recall": 0.6736,
+      "f1": 0.8035,
+      "roc_auc": 0.8965
+    },
+    {
+      "scenario": "combined",
+      "model": "Random Forest (baseline)",
+      "accuracy": 0.8441,
+      "precision": 0.999,
+      "recall": 0.6355,
+      "f1": 0.7769,
+      "roc_auc": 0.847
+    },
+    {
+      "scenario": "combined",
+      "model": "LRF (bounded, no aug.)",
+      "accuracy": 0.8442,
+      "precision": 0.9998,
+      "recall": 0.6352,
+      "f1": 0.7769,
+      "roc_auc": 0.8659
+    },
+    {
+      "scenario": "combined",
+      "model": "AR-LRF (hardened)",
+      "accuracy": 0.9789,
+      "precision": 0.9968,
+      "recall": 0.9536,
+      "f1": 0.9748,
+      "roc_auc": 0.9943
+    }
+  ],
+  "leave_one_attack_out": [
+    {
+      "attack": "homoglyph_ascii",
+      "recall_held_out": 0.9969
+    },
+    {
+      "attack": "homoglyph_unicode",
+      "recall_held_out": 0.9961
+    },
+    {
+      "attack": "token_padding",
+      "recall_held_out": 1.0
+    },
+    {
+      "attack": "encoding",
+      "recall_held_out": 0.9962
+    },
+    {
+      "attack": "subdomain_reorder",
+      "recall_held_out": 0.9962
+    },
+    {
+      "attack": "obfuscation",
+      "recall_held_out": 0.9977
+    },
+    {
+      "attack": "benign_mimicry",
+      "recall_held_out": 0.6391
+    }
+  ],
+  "mimicry_deep_dive": {
+    "share_bare_domain_after_mimicry": 0.4012,
+    "Random Forest (baseline)": {
+      "recall_bare_domain": 0.0915,
+      "recall_with_path": 1.0,
+      "recall_overall": 0.6355,
+      "clean_recall": 0.9958,
+      "false_positive_rate": 0.0005
+    },
+    "AR-LRF (hardened)": {
+      "recall_bare_domain": 0.1864,
+      "recall_with_path": 1.0,
+      "recall_overall": 0.6736,
+      "clean_recall": 0.996,
+      "false_positive_rate": 0.0023
+    },
+    "Mimicry-saturated LRF": {
+      "recall_bare_domain": 0.3442,
+      "recall_with_path": 1.0,
+      "recall_overall": 0.7369,
+      "clean_recall": 0.997,
+      "false_positive_rate": 0.0279
+    }
+  }
+}

@@ -10,7 +10,7 @@ See **[report.md](report.md)** for the full assignment report.
 
 ```bash
 pip install -r requirements.txt
-python src/experiment.py          # downloads data, trains, attacks, hardens, writes results/
+python src/experiment.py          # ~13 min on a laptop CPU: downloads data, trains, attacks, hardens, writes results/
 python src/predict.py "http://paypa1-login.example.com/verify"   # demo
 python -m pytest -q tests
 ```
