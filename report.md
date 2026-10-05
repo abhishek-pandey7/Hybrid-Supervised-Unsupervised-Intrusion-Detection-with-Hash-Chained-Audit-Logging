@@ -55,55 +55,280 @@ AI models can significantly improve real-world processes by:
 
 ## RESEARCH PAPER ANALYSIS
 
-**Title:** "Adversarial-resilient lightweight phishing URL detection: Evaluating lexical & metadata features under evasion techniques". *Scientific Reports* 16, 26668 (Nature Portfolio), July 2026.
+**Title:** "Adversarial-resilient lightweight phishing URL detection: Evaluating lexical & metadata features under evasion techniques"
 
-We chose this paper for two reasons:
+**Authors:** Ayan Chaudhuri and Mohankumar B, School of Computer Science and Engineering (SCOPE), Vellore Institute of Technology, Vellore, India.
 
-1. It is recent and peer-reviewed.
-2. It tackles a gap that most phishing papers ignore: they report about 99% accuracy on clean data but never test what happens when an attacker deliberately changes the URL. That gave us a concrete, measurable experiment: clean vs. attacked vs. hardened.
+**Published in:** *Scientific Reports* (Nature Portfolio), Vol. 16, Article 26668, 2026. DOI: 10.1038/s41598-026-60046-3
 
-**Problem statement addressed:**
+We chose this paper for three reasons:
 
-Phishing is one of the most widespread cyber threats. Attackers craft deceptive URLs that imitate trusted brands to steal credentials and payment data. Machine-learning detectors look excellent in the literature, but they are almost always evaluated under *clean* conditions, where the test URLs look like the training URLs.
+1. **It is recent and peer-reviewed.** It was published in 2026 in a Nature Portfolio journal.
+2. **It addresses a real gap.** Most phishing detectors report about 99% accuracy but are tested only on *clean* URLs. This paper asks what happens when an attacker deliberately modifies the URL to evade detection. That gives a concrete, measurable experiment: clean vs. attacked vs. hardened.
+3. **It can be implemented practically.** The model is a Random Forest on hand-crafted URL features, so its core idea can be reproduced with Scikit-learn on a laptop, with no GPU or web crawling.
 
-Real attackers adapt. The paper studies **adversarial evasion**, meaning small, deliberate edits that keep a phishing URL working but push it past the detector:
+### Problem statement addressed
 
-- obfuscation
-- encoding manipulation
-- homoglyph substitution (`paypal` → `paypa1`, or Cyrillic `а` for Latin `a`)
-- token padding
-- subdomain reordering
+Phishing is the most common cyber threat because it is both psychologically and technically easy. Attackers send fraudulent links through email, social media or spoofed websites to steal credentials or install malware. The paper cites an RSA (2013) report: more than **450,000 phishing attacks in one year, causing losses of about USD 5.9 billion**.
 
-The goal is a detector that stays accurate under these manipulations and is still lightweight enough for real-time use.
+Existing defences have three weaknesses:
 
-**AI approaches / algorithms used:**
+- **Blacklists and rule-based filters are reactive.** They only block URLs that are already known to be malicious. Attackers bypass them with minimal textual changes such as character replacement, random tokens or URL shorteners.
+- **Classical ML detectors** (Logistic Regression, Decision Tree, Random Forest, SVM, KNN) learn from fixed datasets and assume the data distribution never changes. Small structural perturbations, such as replacing `google` with `g00gle` or reordering subdomains, can sharply reduce their accuracy.
+- **Deep learning detectors** (CNN-LSTM, attention models, BERT) are more accurate but computationally expensive. That limits their use in real-time and resource-constrained settings such as email gateways, browser extensions, mobile devices and IoT nodes.
 
-The authors propose **AR-LRF (Adversarial-Resilient Lightweight Random Forest)**:
+The paper's central claim is that **most existing models are evaluated only under clean conditions and ignore adversarial URL evasion.** Few works combine lightweight deployment, adversarial robustness and interpretability in one reproducible framework.
 
-- **Random Forest**: an ensemble of decision trees, each trained on a bootstrap sample with random feature subsets, whose votes are averaged. It works well on tabular features, has low variance and fast inference, and produces feature importances, which matters for interpretability in security tools.
-- **Controlled ensemble complexity**: the number and depth of trees are bounded, so the model stays small and fast for real-time or edge deployment.
-- **Adversarial training**: simulated adversarial perturbations of URLs are added to the training data, so the forest learns rules that still hold when a URL has been manipulated.
+The problem is formulated as **binary classification**. Given a feature vector *x* ∈ ℝᵈ extracted from a URL, learn *f(x) → y*, where *y* ∈ {0 = benign, 1 = phishing}. The decision confidence is *P(y = 1 | x) = σ(f(x))*.
 
-**Representative datasets / data sources mentioned:**
+**Threat model:**
 
-The paper evaluates on a large-scale, imbalanced, real-world corpus of about **650,000 URLs** (benign and malicious). Features are derived from the URL itself and its metadata. Raw-URL deep models and deep packet inspection (DPI) are deliberately avoided, which preserves user privacy and keeps deployment cheap.
+- **Attacker:** can modify the URL string freely, as long as the malicious purpose and redirection still work.
+- **Defender:** restricted to URL-based features only. Web-page rendering, deep packet inspection (DPI) and external content fetching are deliberately excluded to keep the detector lightweight and real-time.
 
-For our replication we used the **PhiUSIIL Phishing URL Dataset** (UCI Machine Learning Repository #967, 235,795 URLs), which recent work (arXiv:2606.00889) also uses as a benchmark.
+**Objectives stated by the authors:**
 
-**Model architecture & training strategies (typical):**
+1. Design a lightweight ML model using lexical and metadata features for efficient phishing URL detection.
+2. Model realistic evasion techniques: homoglyph substitution, token padding, subdomain manipulation and encoding-based obfuscation.
+3. Incorporate adversarial training and evaluate robustness with F1-score and Robust-AUC.
+4. Evaluate on a large dataset that reflects real-world class imbalance.
+5. Integrate explainability (feature importance) for interpreting predictions.
 
-- Feature extraction: lexical and structural URL features (lengths, character counts and ratios, entropy, IP-in-host, `@` symbol, subdomain count, etc.). No page fetch is needed.
-- Classifier: bounded Random Forest.
-- Training: clean data plus perturbed copies of phishing URLs (data augmentation with simulated evasions).
-- Evaluation: the same model is tested on clean data and separately under each evasion technique to measure *performance degradation*.
+### AI approaches / algorithms used
 
-**Evaluation metrics commonly used:**
+The proposed model is the **Adversarial-Resilient Lightweight Random Forest (AR-LRF)**.
 
-- Classification: accuracy, precision, **recall (detection rate)**, F1-score, ROC-AUC.
-- Robustness: the drop in each metric from clean to adversarial test data.
-- Deployment: model size and inference time (the "lightweight" claim).
+**1. Random Forest backbone.** A Random Forest is an ensemble of decision trees. Each tree is trained on a bootstrap sample of the data and considers a random subset of features at each split. The final prediction is a majority vote. The authors chose it because:
 
-**Reported result:** AR-LRF reaches **99.78% accuracy and ROC-AUC 0.9999** on clean data, with significantly lower degradation under adversarial perturbation than conventional models.
+- it performs well on tabular features;
+- inference is cheap;
+- it tolerates noisy feature distributions better than a linear model;
+- it captures non-linear interactions between features;
+- it gives feature importances for interpretability.
+
+**2. Controlled ensemble complexity.** To keep the model lightweight:
+
+- the tree depth is bounded (*max depth = 16*);
+- a minimum leaf size is enforced so the trees do not over-specialise on training patterns;
+- **class-balanced learning** keeps the decision boundary stable despite the 91:9 class imbalance.
+
+**3. Adversarial training (the key idea).** Baselines are trained only on clean URLs. AR-LRF is trained on a **mixture of clean and adversarially perturbed samples**, so it learns decision boundaries that still hold when an attacker shifts the feature distribution. Adversarial samples are generated in two ways:
+
+- **URL-level transformations (the main method).** The raw URL string is modified, then passed through the same feature extractor again, so the adversarial effect shows up realistically in the features:
+
+  | Evasion technique | Example from the paper | Features affected |
+  |---|---|---|
+  | Homoglyph substitution | `google.com` → `g00gle.com` | digit count, entropy |
+  | Token padding | `/login` → `/login-secure-update` | URL length, special characters, entropy |
+  | Subdomain manipulation | `secure.bank.com` → `bank.secure-login.com` | structural features |
+  | Encoding-based obfuscation | `/login` → `%2Flogin`, or Unicode substitutions | hex encoding, Unicode usage |
+
+- **Bounded feature-level noise (used for sensitivity analysis).** Each feature is scaled by a random factor:
+
+  *x′ = x · (1 + ε)*, with *ε ~ U(−δ, δ)* and *δ = 0.1*.
+
+  The perturbation is limited by the constraint *‖x′ − x‖₂ ≤ τ*, with *τ = 0.5*. This keeps adversarial samples realistic, so they are not impossible distortions of a URL.
+
+**4. Joint decision-risk objective.** The authors frame AR-LRF as balancing three goals:
+
+*R(x) = λ₁·L_cls(x, y) + λ₂·L_adv(x, x′) + λ₃·C(x)*
+
+- *L_cls* is the classification loss.
+- *L_adv* is an adversarial consistency loss: predictions on *x* and its perturbed copy *x′* should agree.
+- *C(x)* is the computational cost.
+- λ₁, λ₂ and λ₃ set the trade-off between accuracy, robustness and efficiency.
+
+**Overall pipeline** (the paper's "perception–decision pipeline"):
+
+```
+Raw URL → feature extraction (lexical + structural + metadata) → preprocessing
+        → adversarial augmentation (URL-level transforms + bounded noise)
+        → bounded Random Forest ensemble (300 trees, depth 16, class-balanced)
+        → P(phishing) → benign / phishing decision
+```
+
+### Representative datasets / data sources mentioned
+
+| Attribute | Value |
+|---|---|
+| Total URLs | 650,000 (after removing duplicate, inactive and malformed URLs) |
+| Benign URLs | 591,500 (91%), from the **Alexa** and **Tranco** top-domain lists |
+| Phishing URLs | 58,500 (9%), from **OpenPhish** and **PhishTank** |
+| Collection period | 2024 |
+| Class distribution | Deliberately imbalanced, to reflect real web traffic (most papers use an artificial 50:50 split) |
+| Model input | Numerical features only; raw URLs are kept for feature extraction and auditing only |
+| Privacy | No personally identifiable information; only publicly accessible URLs |
+| Availability | On request from the corresponding author (not public) |
+
+Raw URL strings are never fed to the model. This prevents it from memorising specific domain names or brands and forces it to learn general phishing patterns.
+
+The paper's summary statistics (Table 7) show that phishing URLs are:
+
+- longer: mean length **88.9 vs 63.8** characters;
+- more random: entropy **4.03 vs 3.47**;
+- more digit-heavy: **6.58 vs 2.41** digits on average.
+
+The class distributions overlap considerably, though, so the task is not trivially separable.
+
+**Feature set.** There are 12 features in three groups, each rated by how easily an attacker can manipulate it (Table 3):
+
+| Feature | Category | Description | Attack sensitivity |
+|---|---|---|---|
+| URL length | Lexical | Total characters in the URL | Medium |
+| Digit count | Lexical | Number of numeric characters | Medium |
+| Special characters | Lexical | Count of special symbols | Medium |
+| Entropy | Lexical | Character randomness, *H = −Σ pᵢ log pᵢ*, min–max normalised | Medium |
+| HTTPS presence | Structural | Secure-protocol indicator | Low |
+| IP-based URL | Structural | IP address instead of a domain name | Low |
+| Redirect count | Structural | Number of redirections | Medium |
+| Hex encoding | Encoding | Hexadecimal characters present | High |
+| Unicode usage | Encoding | Unicode obfuscation | High |
+| Domain age | Metadata | Days since domain registration | High |
+| Alexa rank | Metadata | Website popularity | High |
+| TLD | Metadata | Top-level domain | Medium |
+
+### Model architecture & training strategies
+
+**Baselines compared (Table 4):**
+
+| Model | Key hyperparameters | Features | Adversarial augmentation |
+|---|---|---|---|
+| Logistic Regression | max iterations = 2000 | Lexical + Structural | No |
+| Decision Tree | max depth = 8 | Lexical + Structural | No |
+| Random Forest | 200 trees, max depth = 12 | Lexical + Structural | No |
+| SVM (RBF kernel) | probability outputs enabled | Lexical + Structural | No |
+| Gaussian Naïve Bayes | Gaussian assumption | Lexical only | No |
+| RF-Full | 200 trees, max depth = 12 | Lexical + Structural + Metadata | No |
+| RF-Full + Adv | 200 trees, max depth = 12 | Lexical + Structural + Metadata | Yes |
+| **AR-LRF (proposed)** | **300 trees, max depth = 16** | **Lexical + Structural + Metadata** | **Yes** |
+
+RF-Full + Adv is a "fairness" baseline. It uses the same features and the same adversarial augmentation as AR-LRF, so any remaining gap cannot be explained by richer features or augmentation alone.
+
+**Training and validation protocol:**
+
+- 80/20 stratified train–test split, so both sets keep the 91:9 class ratio.
+- **5-fold cross-validation**, reported as mean ± standard deviation.
+- Fixed random seeds for reproducibility.
+- Duplicate URLs and duplicate domain-level records removed *before* splitting, to avoid data leakage.
+- Training set = clean samples + adversarial samples (Algorithm 1 in the paper).
+
+### Evaluation metrics commonly used
+
+**Detection quality:**
+
+- **Accuracy** = (TP + TN) / (TP + TN + FP + FN)
+- **Precision** = TP / (TP + FP): how reliable a "phishing" prediction is.
+- **Recall** = TP / (TP + FN): the share of phishing URLs actually caught.
+- **F1-score** = 2PR / (P + R)
+- **ROC-AUC**: ranking quality across all thresholds.
+- **Matthews Correlation Coefficient (MCC)**: uses all four cells of the confusion matrix, so it is more reliable under class imbalance.
+
+**Security-specific errors:**
+
+- **FPR** = FP / (FP + TN): false alarms on benign URLs.
+- **FNR** = FN / (FN + TP): missed phishing URLs.
+
+**Robustness:**
+
+- **Accuracy degradation**, Δ_robust = (Acc_clean − Acc_adv) / Acc_clean.
+- Robust-AUC, and **probability (confidence) stability** between clean and attacked inputs.
+
+**Significance and efficiency:**
+
+- **McNemar's test** between the best baseline and AR-LRF.
+- Training time, inference latency (ms per URL), model size, memory footprint and throughput (URLs per second).
+
+### Key results reported in the paper
+
+**Clean test set (Table 8 and Table 8a):**
+
+| Model | Accuracy | Precision | Recall | F1 | ROC-AUC |
+|---|---|---|---|---|---|
+| Logistic Regression | 0.9685 | 0.9761 | 0.9605 | 0.9682 | 0.9950 |
+| Decision Tree | 0.9846 | 0.9987 | 0.9705 | 0.9844 | 0.9955 |
+| Random Forest | 0.9892 | 0.9964 | 0.9820 | 0.9892 | 0.9983 |
+| SVM (RBF) | 0.9799 | 0.9913 | 0.9683 | 0.9796 | 0.9950 |
+| Naïve Bayes | 0.9355 | 0.9148 | 0.9605 | 0.9371 | 0.9902 |
+| RF-Full | 0.9918 | 0.9971 | 0.9865 | 0.9917 | 0.9989 |
+| RF-Full + Adv | 0.9946 | 0.9978 | 0.9914 | 0.9945 | 0.9994 |
+| **AR-LRF** | **0.9978** | **0.9985** | **0.9970** | **0.9977** | **0.9999** |
+
+5-fold cross-validation gives AR-LRF **0.997 ± 0.001**, against 0.989 ± 0.002 for Random Forest. McNemar's test between Random Forest and AR-LRF gives **p < 0.01**, so the improvement is statistically significant.
+
+**Ablation (Table 9).** Removing adversarial augmentation from AR-LRF lowers accuracy from 0.9978 to 0.9918, F1 from 0.9977 to 0.9916, and ROC-AUC from 0.9999 to 0.9979.
+
+**Under adversarial evasion (Table 11).** This is the paper's main result:
+
+| Model | Clean accuracy | Adversarial accuracy | Drop |
+|---|---|---|---|
+| Logistic Regression | 0.9685 | 0.812 | −15.65% |
+| Decision Tree | 0.9846 | 0.742 | −24.26% |
+| Random Forest | 0.9892 | 0.768 | −22.12% |
+| SVM (RBF) | 0.9799 | 0.835 | −14.49% |
+| **AR-LRF** | **0.9978** | **0.932** | **−6.58%** |
+
+The baselines lose 14–24 percentage points under attack; AR-LRF loses about 6.6.
+
+**Sensitivity to perturbation strength (Table 6a).** AR-LRF's accuracy falls gradually as δ increases:
+
+| δ | 0.05 | 0.10 | 0.15 | 0.20 |
+|---|---|---|---|---|
+| Adversarial accuracy | 96.8% | 93.2% | 90.4% | 87.1% |
+| Degradation | 2.98% | 6.58% | 9.40% | 12.71% |
+
+**Computational cost (Table 14):**
+
+| Model | Training time | Inference | Model size | Memory | Throughput |
+|---|---|---|---|---|---|
+| Random Forest | 6.5 s | 0.18 ms/URL | 7.8 MB | 64 MB | 5,556 URLs/s |
+| SVM (RBF) | 9.2 s | 0.24 ms/URL | 12.6 MB | 82 MB | 4,167 URLs/s |
+| **AR-LRF** | 8.1 s | **0.21 ms/URL** | 9.4 MB | 71 MB | **4,762 URLs/s** |
+
+AR-LRF is not the smallest model; Naïve Bayes and Logistic Regression are under 0.1 MB. It is lightweight in the sense of fast inference with no heavy components (no DPI, no deep feature extraction, no page rendering), which suits email gateways, browser extensions and network appliances.
+
+**Error analysis.**
+
+- Baseline models mostly failed on phishing URLs that **imitate benign structure**: moderate length, low entropy, valid HTTPS.
+- AR-LRF handles these better, but borderline cases with overlapping entropy remain difficult.
+- AR-LRF's wrong predictions usually come with **low confidence**, so the model is rarely "confidently wrong", which matters in security applications.
+
+**Comparison with prior work (Table 10).** AR-LRF reaches 0.9978 accuracy, against:
+
+- 0.99 for a BERT model (Elsadig et al., 2022);
+- 0.985 for a hybrid CNN-ML pipeline (Nagy et al., 2023);
+- 0.988 for an explainable ML model (Wang, 2025).
+
+AR-LRF reaches this at a fraction of the computational cost.
+
+### Summary of key components of the AI system
+
+| Component | Role in the system |
+|---|---|
+| Data collection and cleaning | Merges phishing feeds (OpenPhish, PhishTank) and benign top-site lists (Alexa, Tranco); removes duplicates and malformed URLs |
+| Feature extraction | Converts each URL into 12 numerical lexical, structural/encoding and metadata features |
+| Adversarial sample generator | Applies homoglyph, padding, subdomain and encoding transformations to raw URLs, then re-extracts features; adds bounded feature noise (δ, τ) |
+| AR-LRF classifier | Bounded, class-balanced Random Forest (300 trees, depth 16) trained on clean + adversarial samples |
+| Robustness evaluation | Compares metrics on clean and attacked test data, perturbation-strength sensitivity, confidence stability, McNemar's test |
+| Interpretability | Feature-importance analysis and feature-level case studies of misclassifications |
+
+**Critical modules that can be implemented practically:**
+
+1. **Data preprocessing:** cleaning, labelling, stratified split.
+2. **Lexical feature extraction** from the URL string.
+3. **URL-level evasion functions:** homoglyph, token padding, subdomain reordering, encoding.
+4. **Random Forest training**, both baseline and adversarially augmented.
+5. **Robustness evaluation:** clean vs. attacked metrics, confusion matrices, ROC curves.
+
+Our implementation covers modules 1–5 on the public PhiUSIIL dataset (UCI #967), because the paper's 650k-URL dataset is not publicly available. We used only lexical features, so the metadata features (domain age, Alexa rank) are not replicated.
+
+### Critical observations on the paper
+
+- **No per-attack breakdown.** The adversarial results in Table 11 are reported as a single accuracy figure. They do not show how much each evasion technique (homoglyph, padding, subdomain, encoding) hurts on its own, so the most dangerous attack cannot be identified from the paper.
+- **The model comparison is not equal-capacity.** AR-LRF uses 300 trees of depth 16, while the "fair" RF-Full + Adv baseline uses 200 trees of depth 12. Part of AR-LRF's advantage may simply come from a larger model rather than the training framework.
+- **Coincident numbers.** The headline URL-level adversarial accuracy (93.2%, −6.58%) is identical to the feature-noise sensitivity result at δ = 0.10. The paper does not explain how two different attack procedures produced the same figure.
+- **The metadata features are not purely URL-based.** Domain age and Alexa rank require external WHOIS and ranking lookups, and the paper itself rates them "highly sensitive" to manipulation. Alexa rankings were also retired in 2022.
+- **Limited reproducibility.** The dataset is available only on request, and the λ coefficients of the risk objective are not given.
+- **The authors' own limitations.** Evaluation uses cross-validation rather than a temporally separated test set, so long-term generalisation to new phishing campaigns is not proven. Future work they propose includes concept drift, URL shortening, brand-impersonation variants, redirect-chain manipulation, multilingual homoglyphs, and field deployment in email gateways or web proxies.
 
 ---
 
@@ -368,7 +593,7 @@ Future work:
 
 ## REFERENCES
 
-[1] "Adversarial-resilient lightweight phishing URL detection: Evaluating lexical & metadata features under evasion techniques," *Scientific Reports*, vol. 16, art. 26668, 2026. https://www.nature.com/articles/s41598-026-60046-3
+[1] A. Chaudhuri and B. Mohankumar, "Adversarial-resilient lightweight phishing URL detection: Evaluating lexical & metadata features under evasion techniques," *Scientific Reports*, vol. 16, art. 26668, 2026. https://www.nature.com/articles/s41598-026-60046-3
 
 [2] A. Prasad and S. Chandra, "PhiUSIIL: A diverse security profile empowered phishing URL detection framework based on similarity index and incremental learning," *Computers & Security*, vol. 136, 2024. Dataset: UCI Machine Learning Repository #967, https://archive.ics.uci.edu/dataset/967
 
