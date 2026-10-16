@@ -123,18 +123,19 @@ Six tabs, in the order of the story: what was found, try it, attack it, measure 
 ## How it works
 
 ```mermaid
+%%{init: {"htmlLabels": false, "markdownAutoWrap": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 480, "nodeSpacing": 36, "rankSpacing": 48, "padding": 14}}}%%
 flowchart TD
-    data[("PhiUSIIL<br/>235,370 unique URLs")] --> feat["Lexical feature extraction<br/>29 numbers from the URL string"]
-    feat --> split{"Stratified 80/20 split"}
-    split -- "188,296 train" --> base["Clean baselines<br/>LR, Decision Tree, Random Forest"]
-    split -- "phishing train URLs" --> aug["Attacked copies<br/>one random attack per URL"]
-    aug --> ar["AR-LRF<br/>bounded forest + adversarial training"]
-    split -- "47,074 test" --> atk["8 evasion attacks<br/>on the phishing test URLs"]
-    base --> eval["Score clean vs attacked"]
+    data[("PhiUSIIL dataset<br/>235,370 URLs")] --> feat["Feature extraction<br/>29 lexical features"]
+    feat --> split{"80/20 split"}
+    split -- "188,296 train" --> base["Clean baselines<br/>LR, DT, RF"]
+    split -- "phishing train" --> aug["Attacked copies<br/>1 per phishing URL"]
+    aug --> ar["AR-LRF<br/>adversarial training"]
+    split -- "47,074 test" --> atk["8 evasion attacks<br/>on phishing test URLs"]
+    base --> eval["Evaluation<br/>clean vs attacked"]
     atk --> eval
     ar --> eval
-    ar --> loao["Leave-one-attack-out<br/>generalisation check"]
-    eval --> out[/"results/ metrics, figures<br/>models/ RF and AR-LRF"/]
+    ar --> loao["Leave-one-attack-out<br/>generalisation"]
+    eval --> out[/"results/ and models/"/]
     loao --> out
     classDef hl fill:#f2600c,stroke:#ad420a,color:#ffffff
     class ar hl
@@ -194,6 +195,7 @@ Each attack is applied to every phishing URL in the test set. The rewritten URL 
 | **Combined** | **63.6%** | **63.5%** | **95.4%** |
 
 ```mermaid
+%%{init: {"themeVariables": {"xyChart": {"plotColorPalette": "#2a78d6, #eb6834"}}}}%%
 xychart-beta
     title "Phishing recall under attack (%)"
     x-axis ["Clean", "ASCII", "Unicode", "Padding", "Encoding", "Reorder", "@ trick", "Mimicry", "Combined"]
@@ -254,6 +256,7 @@ AR-LRF: 100 trees, max depth 20, min 2 samples per leaf, trained on the clean da
 ## Architecture of the interface
 
 ```mermaid
+%%{init: {"htmlLabels": false, "markdownAutoWrap": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 480, "nodeSpacing": 30, "rankSpacing": 56, "padding": 14}}}%%
 flowchart LR
     subgraph browser["Browser: app/static"]
         tabs["Six tabs<br/>hash routing"]
@@ -268,7 +271,7 @@ flowchart LR
         features["features.py"]
         attacks["attacks.py"]
     end
-    files[("results/<br/>metrics, projection")]
+    files[("results/<br/>metrics")]
     models[("models/<br/>RF, AR-LRF")]
     tabs --> results
     tabs --> scan
