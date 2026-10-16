@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AR-LRF phishing URL lab</title>
+  <meta name="description" content="Scan URLs with a baseline Random Forest and an adversarially hardened AR-LRF, try eight evasion attacks, and explore the robustness results.">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    try {
+      const t = localStorage.getItem('theme');
+      if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    } catch { /* storage unavailable: follow the system theme */ }
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23f2600c'/%3E%3Cpath d='M12.5 9L9 23M19.5 9L16 23' stroke='%231f0f05' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/css/styles.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body class="is-loading">
+  <div class="backdrop" aria-hidden="true"></div>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="topbar glass">
+    <a class="brand" href="#overview" aria-label="AR-LRF phishing URL lab, overview">
+      <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="9"></rect>
+        <path d="M12.5 9L9 23M19.5 9L16 23"></path>
+      </svg>
+      <span class="brand__text"><strong>AR-LRF</strong><span>Phishing URL lab</span></span>
+    </a>
+    <nav class="tabs-wrap" aria-label="Sections">
+      <div class="tabs" role="tablist" aria-label="Sections"></div>
+    </nav>
+    <button class="theme-toggle icon-btn" type="button"></button>
+  </header>
+
+  <main id="main"></main>
+
+  <div class="tooltip" role="tooltip" hidden></div>
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>
