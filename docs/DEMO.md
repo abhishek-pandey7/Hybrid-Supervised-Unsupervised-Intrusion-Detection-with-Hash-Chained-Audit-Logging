@@ -1,92 +1,113 @@
 # Demo Guide
 
-How to show the project live in about 5 minutes. Every score below was checked against the deployed Docker image on 2026-10-17. It matches `report.md`, `results/demo_predictions.csv` and `python src/predict.py`.
+**Live site:** https://ar-lrf-phishing-lab.onrender.com
+
+The demo takes about 5 minutes. Every score below was checked on the live site.
+
+Scores are the chance a URL is phishing, shown as **baseline RF / AR-LRF**. **0.50 or more means the model flags it as phishing.**
 
 ---
 
-## Before the viva
+## Before you start (2 minutes before the viva)
 
-1. **Wake the site up about 2 minutes early.** Render's free tier sleeps after 15 minutes idle, and the first request takes about a minute. Open the link, wait for the Overview page, and leave the tab open.
-2. **Have Wi-Fi.** The page loads its fonts and the 3D library (Three.js) from a CDN. Without internet, the 3D plot won't appear.
-3. **Have a local fallback ready**, in case the site or the internet fails:
-   ```bash
-   python app/server.py                                   # http://127.0.0.1:8000
-   python src/predict.py --attacks "http://www.institutohumanus.org.br"   # terminal version
-   ```
-4. **Know the scoring.** Both models give a probability of phishing. 0.50 or above means PHISH.
+1. Open https://ar-lrf-phishing-lab.onrender.com in your browser.
+2. Wait for the Overview page to appear. If the site has been idle, the first load takes about a minute because the free server has to wake up.
+3. Leave the tab open.
+4. Make sure you're on Wi-Fi. The 3D plot loads from the internet.
+
+**If the site doesn't load,** run it on your laptop instead:
+```bash
+python app/server.py        # then open http://127.0.0.1:8000
+```
 
 ---
 
-## The 5-minute script
+## Step 1: The headline (Overview tab)
 
-| # | Tab | Do this | Say this |
+1. Point at the big heading: *"Catches 99.6% of phishing URLs. Misses 36% once they start with https://www."*
+2. Point at the three number cards at the bottom (99.6% → 63.6% → 95.4%).
+
+**Say:** "On clean data our model catches 99.6% of phishing URLs, the same as the paper. But when phishing URLs start with `https://www.`, it misses about a third."
+
+## Step 2: Show it visually (Overview tab, 3D plot)
+
+1. Point at the **white blob**: "These are 700 legitimate URLs. They all look the same to the model, because every legitimate URL in the dataset is a bare `https://www` homepage."
+2. Point at the **red dots**: "These are 700 phishing URLs, spread out because phishing URLs vary a lot."
+3. Click **"With https://www. added"**.
+4. Watch the red dots move toward the white blob. Hollow rings appear: those are phishing URLs the model now misses (269 of 700).
+
+**Say:** "Adding `https://www.` moves the phishing URLs on top of the legitimate ones, and that's where the model stops catching them."
+
+## Step 3: Why it happens (Features & data tab)
+
+1. Click the **Features & data** tab.
+2. Point at the URL-shape numbers: legitimate URLs are 100% https, 100% www and 0% have a path.
+3. Point at the shortcut result: a 3-feature tree gets 99.75%.
+
+**Say:** "The model didn't learn what phishing looks like. It learned that https with no path means safe. That's a shortcut in the dataset."
+
+## Step 4: Break it live (Attack lab tab)
+
+1. Click the **Attack lab** tab.
+2. Click the sample button **`www.institutohumanus.org.br`**. It's a real phishing URL from the test set.
+3. Point at the **clean** score: **1.00 / 0.99**, so both models catch it.
+4. Point at the **Benign mimicry** row: **0.00 / 0.07**, so both models now call it legitimate.
+
+**Say:** "One free change, a TLS certificate and a `www` record, and the phishing URL gets through both models."
+
+## Step 5: Where hardening helps (Attack lab tab)
+
+1. Click the sample button **`www.wikipedia.org`**.
+2. Point at the **Homoglyph (Unicode)** row. It shows `wikiреdiа.org` with Cyrillic letters that look identical to Latin ones.
+3. The baseline says **0.00** and lets it through. AR-LRF says **0.93** and catches it.
+
+**Say:** "This is where adversarial training works. AR-LRF learned that non-English characters in a domain are suspicious."
+
+## Step 6: What always gets caught (Attack lab tab)
+
+1. Click the sample button **`paypal.com.secure-update.info/login`**.
+2. Point out that every row stays at **1.00 / 1.00**.
+
+**Say:** "A phishing URL with a telling path like `/login` is caught under every attack. The weakness is only bare domains."
+
+## Step 7: The honest limitation (Scan a URL tab)
+
+1. Click the **Scan a URL** tab.
+2. Type `https://www.youtube.com/watch?v=dQw4w9WgXcQ` and click **Scan URL**.
+3. It says **phishing (1.00)**, even though it's a real YouTube link.
+
+**Say:** "This is the same shortcut from the other side. The model never saw a legitimate URL with a path, so it flags real links like this. The 99.8% would not survive real-world use."
+
+## Step 8: Wrap up (Robustness tab, optional)
+
+1. Click the **Robustness** tab.
+2. Point at the recall chart: adversarial training fixes the combined attack (95.4%) but not mimicry (67.4%).
+3. Point at the leave-one-attack-out table: with mimicry left out of training, AR-LRF scores 63.9%, no better than no hardening.
+
+**Say:** "Adversarial training only protects against attacks it has already seen."
+
+**Short on time?** Do steps 4, 5 and 7. They tell the whole story.
+
+---
+
+## Extra URLs if the examiner wants to try more
+
+Always type the full URL, including `http://` or `https://`.
+
+| Type this | Clean | After `https://www.` | What it shows |
 |---|---|---|---|
-| 1 | **Overview** | Point at the headline and the three cards. Drag the 3D plot, then click **After benign mimicry**. | "Clean recall is 99.6%. Add `https://www.` and it drops to 63.6%. Watch the phishing points move into the legitimate cluster." |
-| 2 | **Features & data** | Show the URL-shape numbers (100% / 100% / 0%) and the 3-feature shortcut. | "Every legitimate URL in the dataset is a bare `https://www` homepage. A 3-feature tree gets 99.75%. That is the shortcut." |
-| 3 | **Attack lab** | Click the sample **`www.institutohumanus.org.br`**. | "This is a real phishing URL from the test set. Clean, both models flag it. Benign mimicry takes the baseline to 0.00 and AR-LRF to 0.07. Both miss it." |
-| 4 | **Attack lab** | Click the sample **`www.wikipedia.org`** and look at the Unicode homoglyph row. | "Cyrillic letters that look like `wikipedia`. The baseline says 0.00, it lets it through. AR-LRF says 0.93. That's the clearest win for adversarial training." |
-| 5 | **Attack lab** | Click **`paypal.com.secure-update.info/login`**. | "A phishing URL with a telling path is caught under every attack. Mimicry only works on bare domains." |
-| 6 | **Robustness** | Show the recall chart and the leave-one-attack-out table. | "AR-LRF fixes the combined attack (95.4%), but not pure mimicry (67.4%). And it doesn't help against an attack it never saw." |
-| 7 | **Scan a URL** | Type `youtube.com/watch?v=dQw4w9WgXcQ`. | "Here's the honest limitation. A real YouTube link is flagged as phishing, because the model never saw a legitimate URL with a path. The 99.8% wouldn't survive deployment." |
-
-If time is short, do steps 3, 4 and 7. They tell the whole story.
+| `http://apple-id-verify-account.top` | 1.00 / 0.99 | **0.25 / 0.47** | A made-up phishing domain that gets through |
+| `http://www.dfuimiubaifhimoofmfpbmdjjedaaphs.top` | 0.98 / 0.99 | **0.01 / 0.22** | Even a random-looking domain gets through |
+| `http://www.google.com@evil-site.xyz/login` | 1.00 / 1.00 | 1.00 / 1.00 | The `@` trick (the browser goes to `evil-site.xyz`), always caught |
+| `http://192.168.1.10/login.php` | 1.00 / 1.00 | 0.97 / 0.99 | An IP address instead of a domain, always caught |
+| `https://www.paypal.com` | 0.00 / 0.03 | n/a | Legitimate. The Unicode homoglyph version scores 0.00 / 0.93. |
+| `https://www.amazon.in` | 0.00 / 0.03 | n/a | Legitimate, correct |
+| `https://github.com/login` | **1.00 / 1.00** | n/a | Legitimate but flagged (the limitation) |
 
 ---
 
-## Demo URLs (all checked)
+## Watch out for
 
-Scores are shown as **baseline RF / AR-LRF**. "Mimicry", "Unicode" and "Combined" are rows in the Attack lab.
-
-### The main finding: mimicry breaks both models
-
-| Type exactly | Clean | Mimicry | Combined | What it shows |
-|---|---|---|---|---|
-| `http://www.institutohumanus.org.br` | 1.00 / 0.99 | **0.00 / 0.07** | 0.00 / 0.63 | A real phishing URL that one edit turns "legitimate" |
-| `http://www.dfuimiubaifhimoofmfpbmdjjedaaphs.top` | 0.98 / 0.99 | **0.01 / 0.22** | 0.00 / 0.64 | Even a random-looking domain gets through |
-| `http://apple-id-verify-account.top` | 1.00 / 0.99 | **0.25 / 0.47** | 0.05 / 0.47 | A made-up brand phish: both models miss it after mimicry |
-
-### Adversarial training wins: homoglyphs
-
-| Type exactly | Clean | Unicode homoglyph | What it shows |
-|---|---|---|---|
-| `https://www.wikipedia.org` | 0.01 / 0.03 | **0.00 / 0.93** | The baseline misses the look-alike; AR-LRF catches it |
-| `https://www.paypal.com` | 0.00 / 0.03 | **0.00 / 0.93** | Same, with a brand people know |
-| `https://www.google.com` | 0.00 / 0.03 | **0.00 / 0.93** | Same |
-
-### Always caught: phishing with obvious signs
-
-| Type exactly | Every attack | Why |
-|---|---|---|
-| `http://paypal.com.secure-update.info/login` | 1.00 / 1.00 | Brand hidden in a subdomain, plus a `/login` path |
-| `http://www.google.com@evil-site.xyz/login` | 1.00 / 1.00 | The `@` trick: the browser actually goes to `evil-site.xyz` |
-| `http://192.168.1.10/login.php` | ≥ 0.97 / ≥ 0.99 | An IP address instead of a domain |
-| `http://free-gift-card-winner.xyz/claim?id=123` | 1.00 / 1.00 | A path and a query string |
-
-### Correctly legitimate
-
-| Type exactly | Clean |
-|---|---|
-| `https://www.amazon.in` | 0.00 / 0.03 |
-| `https://www.netflix.com` | 0.00 / 0.05 |
-| `https://www.microsoft.com` | 0.01 / 0.03 |
-| `https://www.onlinesbi.sbi` | 0.01 / 0.03 |
-
-### The honest limitation: real deep links get flagged
-
-| Type exactly | Clean | Truth |
-|---|---|---|
-| `https://www.youtube.com/watch?v=dQw4w9WgXcQ` | **1.00 / 1.00** | legitimate |
-| `https://github.com/login` | **1.00 / 1.00** | legitimate |
-| `https://docs.python.org/3/library/urllib.html` | **1.00 / 1.00** | legitimate |
-| `https://accounts.google.com/signin` | **1.00 / 1.00** | legitimate |
-
-Show one of these on purpose. Examiners respect a team that demonstrates its own limitation (report: Limitations #1).
-
----
-
-## Gotchas
-
-- **Always type the scheme (`http://` or `https://`).** If you type `www.institutohumanus.org.br` without it, the app adds `https://` automatically. That means the "clean" URL already has the mimicry shape, so it scores 0.00 and looks like a failure. The sample buttons include the scheme, so they're safe.
-- **The rounding difference: 63.5% vs 63.6%.** The Overview card says the combined attack went "up from 63.5%", while the report says 63.6%. The stored recall is 0.6355, exactly on the rounding boundary. Both are correct to one decimal.
-- **Bad input is handled.** Empty input, URLs with spaces and URLs over 2,048 characters show an error message instead of crashing.
-- **Nothing is fetched.** Scanning a real phishing URL is safe, because the app reads only the text.
+- **Type `http://` or `https://`.** If you leave it out, the app adds `https://` itself. A phishing URL then already has the mimicry shape, scores about 0, and looks like a failure. The sample buttons are safe.
+- **63.5% vs 63.6%.** The Overview card says "up from 63.5%" and the report says 63.6%. It's the same number (0.6355) rounded differently.
+- **Scanning is safe.** The app only reads the URL text. It never opens the page.
