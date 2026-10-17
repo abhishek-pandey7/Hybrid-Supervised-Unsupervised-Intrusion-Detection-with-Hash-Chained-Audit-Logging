@@ -1,0 +1,9 @@
+# Pinned to the versions the models in models/ were trained with:
+# a joblib-pickled forest is only guaranteed to load under the same scikit-learn.
+numpy==2.5.2
+pandas==3.0.2
+scikit-learn==1.8.0
+joblib==1.5.3
+fastapi==0.135.1
+uvicorn==0.46.0
+pydantic==2.13.4

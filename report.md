@@ -488,12 +488,12 @@ A depth-3 decision tree that looks *only* at `is_https`, `has_www` and `path_len
 
 | Model | Accuracy | Precision | Recall | F1 | ROC-AUC | Train time |
 |---|---|---|---|---|---|---|
-| Logistic Regression | 0.9976 | 0.9999 | 0.9946 | 0.9972 | 0.9987 | 1.7 s |
+| Logistic Regression | 0.9976 | 0.9999 | 0.9946 | 0.9972 | 0.9987 | 1.8 s |
 | Decision Tree | 0.9978 | 0.9992 | 0.9956 | 0.9974 | 0.9978 | 1.5 s |
-| **Random Forest (baseline)** | **0.9979** | 0.9994 | 0.9958 | **0.9976** | 0.9983 | 21 s |
-| **AR-LRF (hardened)** | 0.9970 | 0.9970 | 0.9960 | 0.9965 | 0.9987 | 27 s |
+| **Random Forest (baseline)** | **0.9979** | 0.9994 | 0.9958 | **0.9976** | 0.9983 | 24 s |
+| **AR-LRF (hardened)** | 0.9970 | 0.9970 | 0.9960 | 0.9965 | 0.9987 | 6.4 s |
 
-The baseline Random Forest reaches 99.79% accuracy, compared with 99.78% in the paper. Inference takes about 12 µs per URL and the saved model is 3.8 MB, so the detector is lightweight.
+The baseline Random Forest reaches 99.79% accuracy, compared with 99.78% in the paper. Inference takes about 13 µs per URL and the saved model is 3.8 MB, so the detector is lightweight. AR-LRF trains faster than the baseline despite having 43% more rows, because its trees are capped at depth 20.
 
 **3. Clean vs attacked vs hardened.** The table shows phishing recall (detection rate) on the test set:
 
@@ -576,7 +576,7 @@ Two real phishing URLs from the test set become "legitimate" just by adding `htt
 
 This project implemented a lightweight, interpretable phishing URL detector: a Random Forest on 29 lexical features. We then evaluated it under adversarial evasion, following the AR-LRF approach of the Scientific Reports (2026) paper.
 
-- **Clean performance matched the paper**: 99.79% accuracy and ROC-AUC 0.998, with about 12 µs inference per URL and a 3.8 MB model.
+- **Clean performance matched the paper**: 99.79% accuracy and ROC-AUC 0.998, with about 13 µs inference per URL and a 3.8 MB model.
 - **A trivial structural attack broke the detector.** Benign mimicry (adding `https://www.`) cut phishing recall to 63.6%. Most textbook evasions had no effect on this dataset.
 - **Adversarial training helped against attacks it had seen.** AR-LRF recovered the combined attack to 95.4% recall and caught Unicode homograph domains, at a small false-positive cost (0.23%).
 - **It could not fix mimicry** (67.4%), and it did not generalise to an attack left out of training.

@@ -48,6 +48,7 @@ See **[report.md](report.md)** for the full assignment report.
 - [Architecture of the interface](#architecture-of-the-interface)
 - [API](#api)
 - [Project layout](#project-layout)
+- [Deploy (free)](#deploy-free)
 - [Limitations](#limitations)
 - [Reference](#reference)
 
@@ -366,12 +367,28 @@ curl -s http://127.0.0.1:8000/api/scan -H "content-type: application/json" \
 │       └── js/              main.js, charts.js, hero3d.js, views/…
 ├── results/                 metrics.json, robustness.csv, feature_importance.csv, projection.json, figures/
 ├── tests/                   features, attacks and API tests
-├── docs/screenshots/        images used in this README
+├── docs/
+│   ├── DEMO.md              live demo script with checked URLs
+│   ├── VIVA_QUESTIONS.md    viva Q&A
+│   ├── ARCHITECTURE_DECISIONS.md   why this and not that
+│   └── screenshots/         images used in this README
+├── deploy/                  pinned server requirements, model upload script
+├── Dockerfile, render.yaml  free hosting on Render
 ├── report.md                full assignment report
 └── requirements.txt
 ```
 
 `data/` (the 56 MB dataset) and `models/` are created by `src/experiment.py` and are not committed.
+
+## Deploy (free)
+
+The web interface runs on [Render](https://render.com)'s free tier as a Docker container. It uses about 170 MB of RAM, and the free limit is 512 MB.
+
+1. `models/` isn't committed, so the trained forests are kept in the public Hugging Face model repo [`abhshkp/ar-lrf-phishing-models`](https://huggingface.co/abhshkp/ar-lrf-phishing-models). The `Dockerfile` downloads them at build time, pinned to one commit. After retraining, run `python deploy/push_models.py` and put the commit hash it prints into `MODELS_REVISION` in the `Dockerfile`.
+2. On Render, choose **New → Blueprint** and select this repository. `render.yaml` sets up one free Docker web service.
+3. Free services sleep after 15 minutes idle, and the first request takes about a minute. Open the link a couple of minutes before a demo.
+
+To test the same container locally: `docker build -t ar-lrf . && docker run -p 7860:7860 ar-lrf`, then open http://127.0.0.1:7860.
 
 ## Limitations
 
