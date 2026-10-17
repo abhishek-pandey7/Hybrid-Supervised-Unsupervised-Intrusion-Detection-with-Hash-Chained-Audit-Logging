@@ -79,12 +79,12 @@ function featureSpace(projection, ctx) {
   const setStat = (mode) => {
     if (!hasDetections) return;
     stat.replaceChildren('The baseline misses ', h('strong', {}, fmt.pct(missRate(mode))), ' of these phishing URLs',
-      mode === 'mimicry' ? ' after mimicry.' : '.');
+      mode === 'mimicry' ? ' once https://www. is added.' : '.');
   };
 
   const toggle = segmented({
     label: 'Phishing URLs shown', value: 'clean',
-    options: [{ value: 'clean', label: 'Clean URLs' }, { value: 'mimicry', label: 'After benign mimicry' }],
+    options: [{ value: 'clean', label: 'Original URLs' }, { value: 'mimicry', label: 'With https://www. added' }],
     onChange: (mode) => {
       view?.setMode(mode);
       setStat(mode);
